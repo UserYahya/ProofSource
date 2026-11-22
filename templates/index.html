@@ -46,6 +46,10 @@
     .dark .ps-stat { background: #0f172a; border-color: #1e293b; }
     .ps-stat-l { font-size: .75rem; color: #64748b; }
     .ps-stat-v { font-size: 1.5rem; line-height: 1.2; font-weight: 700; margin-top: .15rem; font-variant-numeric: tabular-nums; }
+    /* stat cards: 2 per row on phones, then as many as fit (the number of cards depends on the contest settings) */
+    .ps-stat-grid { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (min-width: 640px) { .ps-stat-grid { grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); } }
+    @media (max-width: 639px) { .ps-stat { padding: .65rem .85rem; } .ps-stat-v { font-size: 1.25rem; } }
     .ps-label { display: block; font-size: .75rem; font-weight: 500; color: #334155; margin-bottom: .25rem; }
     .dark .ps-label { color: #cbd5e1; }
     .ps-input { width: 100%; background: #fff; border: 1px solid #cbd5e1; border-radius: .5rem; padding: .5rem .75rem; font-size: .875rem; }
@@ -82,7 +86,7 @@
   <header class="bg-gradient-to-r from-ws-dark via-ws-chambray to-ws-cerulean dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 text-white border-b border-white/10 dark:border-slate-800 sticky top-0 z-30 shadow-sm">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2">
       <div class="flex items-center gap-3 sm:gap-6 min-w-0">
-        <button @click="goHome" class="flex items-center gap-2 font-bold text-base tracking-tight text-white hover:text-ws-nature transition shrink-0" aria-label="ProofSource">
+        <button @click="goHome" class="flex items-center gap-2 font-bold text-base tracking-tight text-white hover:text-ws-nature transition min-w-0" aria-label="ProofSource">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="4 12 58 40" class="ps-logo shrink-0" aria-hidden="true">
   <defs>
     <linearGradient id="psl" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#dce8f4"/></linearGradient>
@@ -101,7 +105,7 @@
   <circle cx="51" cy="44.5" r="8.6" fill="#4D8AC0" style="stroke:var(--ps-logo-ring,#2f4f8c)" stroke-width="3.2"/>
   <path d="M47.2 44.7l2.8 2.8 5.1-5.3" fill="none" stroke="#fff" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
-          <span>ProofSource</span>
+          <span class="truncate">ProofSource</span>
         </button>
         <nav class="hidden md:flex items-center gap-5 text-sm">
           <button @click="goHome" :class="view === 'home' ? 'text-white font-semibold border-b-2 border-ws-nature pb-0.5' : 'text-slate-200 hover:text-white'">
@@ -148,10 +152,11 @@
             <polyline points="10 17 15 12 10 7"></polyline>
             <line x1="15" y1="12" x2="3" y2="12"></line>
           </svg>
-          <span>{{ t('loginWikimedia') }}</span>
+          <span class="hidden min-[440px]:inline">{{ t('loginWikimedia') }}</span>
+          <span class="min-[440px]:hidden">{{ t('loginShort') }}</span>
         </a>
 
-        <div v-else class="inline-flex items-center gap-1.5 bg-white/10 dark:bg-slate-800 border border-white/15 pl-2.5 pr-1.5 py-1 rounded-md text-xs max-w-[180px] sm:max-w-none">
+        <div v-else class="inline-flex items-center gap-1.5 bg-white/10 dark:bg-slate-800 border border-white/15 pl-2.5 pr-1.5 py-1 rounded-md text-xs max-w-[130px] min-[440px]:max-w-[180px] sm:max-w-none">
           <svg class="w-3.5 h-3.5 text-ws-nature shrink-0 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
@@ -617,13 +622,16 @@
         </div>
       </section>
 
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div class="ps-stat-grid">
         <div class="ps-stat"><div class="ps-stat-l">{{ t('participants') }}</div><div class="ps-stat-v">{{ fmtNum(active.stats.participants) }}</div></div>
-        <div class="ps-stat"><div class="ps-stat-l">{{ active.contest.validation_visible ? t('proofreadListed') : t('proofread') }}</div><div class="ps-stat-v text-ws-cerulean dark:text-ws-nature">{{ fmtNum(active.stats.listed_pages) }}</div></div>
-        <div class="ps-stat"><div class="ps-stat-l">{{ t('accepted') }}</div><div class="ps-stat-v text-emerald-600 dark:text-emerald-400">{{ fmtNum(active.stats.accepted_pages) }}</div></div>
-        <div v-if="active.contest.review_enabled" class="ps-stat"><div class="ps-stat-l">{{ t('pendingReview') }}</div><div class="ps-stat-v text-amber-600 dark:text-amber-400">{{ fmtNum(active.stats.pending_pages) }}</div></div>
+        <div class="ps-stat"><div class="ps-stat-l">{{ t('proofread') }}</div><div class="ps-stat-v text-ws-cerulean dark:text-ws-nature">{{ fmtNum(active.stats.listed_pages) }}</div></div>
+        <template v-if="active.contest.review_enabled">
+          <div class="ps-stat"><div class="ps-stat-l">{{ t('accepted') }}</div><div class="ps-stat-v text-emerald-600 dark:text-emerald-400">{{ fmtNum(active.stats.accepted_pages) }}</div></div>
+          <div class="ps-stat"><div class="ps-stat-l">{{ t('pendingReview') }}</div><div class="ps-stat-v text-amber-600 dark:text-amber-400">{{ fmtNum(active.stats.pending_pages) }}</div></div>
+        </template>
         <div v-else class="ps-stat"><div class="ps-stat-l">{{ t('totalBookPages') }}</div><div class="ps-stat-v">{{ fmtNum(active.stats.total_book_pages) }}</div></div>
-        <div class="ps-stat col-span-2 sm:col-span-1"><div class="ps-stat-l">{{ t('books') }}</div><div class="ps-stat-v">{{ fmtNum(active.stats.total_books) }}</div></div>
+        <div v-if="active.contest.validation_enabled" class="ps-stat"><div class="ps-stat-l">{{ t('validated') }}</div><div class="ps-stat-v text-violet-600 dark:text-violet-400">{{ fmtNum(active.stats.validated_pages || 0) }}</div></div>
+        <div class="ps-stat"><div class="ps-stat-l">{{ t('books') }}</div><div class="ps-stat-v">{{ fmtNum(active.stats.total_books) }}</div></div>
       </div>
 
       <div v-if="announcementHtml" class="ps-announce bg-ws-nature/10 border border-ws-nature/30 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-200 break-words flex gap-2">
@@ -692,41 +700,70 @@
       </div>
 
       <div v-if="contestSubTab === 'leaderboard'" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-        <div class="overflow-x-auto w-full">
-          <table class="w-full min-w-[580px] text-left border-collapse text-sm">
+        <!-- Columns: Accepted / Pending / Needs fix / Rejected only when review is on (no-review = auto accept);
+             Validated whenever validation earns points. -->
+        <!-- phone: one compact row per participant, points on the right -->
+        <ol class="sm:hidden divide-y divide-slate-200 dark:divide-slate-800">
+          <li v-if="active.leaderboard.length === 0" class="py-8 text-center text-xs text-slate-500">{{ t('noSubmissionsYet') }}</li>
+          <li v-for="(r, idx) in active.leaderboard.slice(0, leaderboardLimit)" :key="'m-' + r.username" class="flex items-center gap-3 px-3 py-2.5">
+            <span class="w-7 shrink-0 text-center tabular-nums text-xs font-semibold" :class="idx < 3 ? 'text-ws-cerulean dark:text-ws-nature' : 'text-slate-500'">{{ fmtNum(idx + 1) }}</span>
+            <div class="min-w-0 flex-1">
+              <button @click="openUserPages(r.username)" class="block max-w-full truncate font-semibold text-sm text-ws-cerulean dark:text-ws-nature hover:underline text-left">{{ r.username }}</button>
+              <div class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                <span>{{ t('proofread') }}: {{ fmtNum(r.submitted) }}</span>
+                <template v-if="active.contest.review_enabled">
+                  <span class="text-emerald-600 dark:text-emerald-400">{{ t('accepted') }}: {{ fmtNum(r.accepted) }}</span>
+                  <span v-if="r.pending" class="text-amber-600 dark:text-amber-400">{{ t('pending') }}: {{ fmtNum(r.pending) }}</span>
+                  <span v-if="r.needs_fix" class="text-orange-600 dark:text-orange-400">{{ t('needsFix') }}: {{ fmtNum(r.needs_fix) }}</span>
+                  <span v-if="r.rejected" class="text-rose-600 dark:text-rose-400">{{ t('rejected') }}: {{ fmtNum(r.rejected) }}</span>
+                </template>
+                <span v-if="active.contest.validation_enabled" class="text-violet-600 dark:text-violet-400">{{ t('validated') }}: {{ fmtNum(r.validated) }}</span>
+              </div>
+            </div>
+            <div class="shrink-0 text-right">
+              <div class="text-base font-bold tabular-nums leading-tight">{{ fmtNum(r.points) }}</div>
+              <div class="text-[10px] uppercase tracking-wider text-slate-500">{{ t('points') }}</div>
+            </div>
+          </li>
+        </ol>
+        <!-- tablet / desktop: full table -->
+        <div class="hidden sm:block overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th class="py-3.5 px-4 font-medium w-14">#</th>
                 <th class="py-3.5 px-4 font-medium">{{ t('user') }}</th>
                 <th class="py-3.5 px-4 font-medium text-right">{{ t('proofread') }}</th>
-                <th class="py-3.5 px-4 font-medium text-right">{{ t('accepted') }}</th>
                 <template v-if="active.contest.review_enabled">
+                  <th class="py-3.5 px-4 font-medium text-right">{{ t('accepted') }}</th>
                   <th class="py-3.5 px-4 font-medium text-right">{{ t('pending') }}</th>
                   <th class="py-3.5 px-4 font-medium text-right">{{ t('needsFix') }}</th>
                   <th class="py-3.5 px-4 font-medium text-right">{{ t('rejected') }}</th>
                 </template>
+                <th v-if="active.contest.validation_enabled" class="py-3.5 px-4 font-medium text-right">{{ t('validated') }}</th>
                 <th class="py-3.5 px-4 font-medium text-right">{{ t('points') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
               <tr v-if="active.leaderboard.length === 0">
-                <td colspan="8" class="py-8 text-center text-xs text-slate-500">{{ t('noSubmissionsYet') }}</td>
+                <td colspan="9" class="py-8 text-center text-xs text-slate-500">{{ t('noSubmissionsYet') }}</td>
               </tr>
               <tr v-for="(r, idx) in active.leaderboard.slice(0, leaderboardLimit)" :key="r.username" class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                <td class="py-3 px-4 tabular-nums text-xs text-slate-500">{{ idx + 1 }}</td>
-                <td class="py-3 px-4">
-                  <button @click="openUserPages(r.username)" class="font-semibold text-ws-cerulean dark:text-ws-nature hover:underline text-left">
+                <td class="py-3 px-4 tabular-nums text-xs text-slate-500">{{ fmtNum(idx + 1) }}</td>
+                <td class="py-3 px-4 max-w-[14rem]">
+                  <button @click="openUserPages(r.username)" class="block max-w-full truncate font-semibold text-ws-cerulean dark:text-ws-nature hover:underline text-left" :title="r.username">
                     {{ r.username }}
                   </button>
                 </td>
-                <td class="py-3 px-4 text-right tabular-nums text-xs">{{ r.submitted }}</td>
-                <td class="py-3 px-4 text-right tabular-nums text-xs text-emerald-600 dark:text-emerald-400 font-semibold">{{ r.accepted }}</td>
+                <td class="py-3 px-4 text-right tabular-nums text-xs">{{ fmtNum(r.submitted) }}</td>
                 <template v-if="active.contest.review_enabled">
-                  <td class="py-3 px-4 text-right tabular-nums text-xs text-amber-600 dark:text-amber-400">{{ r.pending }}</td>
-                  <td class="py-3 px-4 text-right tabular-nums text-xs text-orange-600 dark:text-orange-400">{{ r.needs_fix }}</td>
-                  <td class="py-3 px-4 text-right tabular-nums text-xs text-rose-600 dark:text-rose-400">{{ r.rejected }}</td>
+                  <td class="py-3 px-4 text-right tabular-nums text-xs text-emerald-600 dark:text-emerald-400 font-semibold">{{ fmtNum(r.accepted) }}</td>
+                  <td class="py-3 px-4 text-right tabular-nums text-xs text-amber-600 dark:text-amber-400">{{ fmtNum(r.pending) }}</td>
+                  <td class="py-3 px-4 text-right tabular-nums text-xs text-orange-600 dark:text-orange-400">{{ fmtNum(r.needs_fix) }}</td>
+                  <td class="py-3 px-4 text-right tabular-nums text-xs text-rose-600 dark:text-rose-400">{{ fmtNum(r.rejected) }}</td>
                 </template>
-                <td class="py-3 px-4 text-right tabular-nums font-bold">{{ r.points }}</td>
+                <td v-if="active.contest.validation_enabled" class="py-3 px-4 text-right tabular-nums text-xs text-violet-600 dark:text-violet-400 font-semibold">{{ fmtNum(r.validated) }}</td>
+                <td class="py-3 px-4 text-right tabular-nums font-bold">{{ fmtNum(r.points) }}</td>
               </tr>
             </tbody>
           </table>
@@ -1005,20 +1042,44 @@
       </div>
 
       <div v-if="centralTab === 'leaderboard'" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-        <div class="overflow-x-auto"><table class="w-full min-w-[560px] text-left text-sm">
+        <!-- phone -->
+        <ol class="sm:hidden divide-y divide-slate-200 dark:divide-slate-800">
+          <li v-if="central.leaderboard.length === 0" class="py-8 text-center text-xs text-slate-500">{{ t('noSubmissionsYet') }}</li>
+          <li v-for="(r, i) in central.leaderboard.slice(0, leaderboardLimit)" :key="'m-' + r.username" class="flex items-center gap-3 px-3 py-2.5">
+            <span class="w-7 shrink-0 text-center tabular-nums text-xs font-semibold" :class="i < 3 ? 'text-ws-cerulean dark:text-ws-nature' : 'text-slate-500'">{{ fmtNum(i + 1) }}</span>
+            <div class="min-w-0 flex-1">
+              <div class="truncate font-semibold text-sm">{{ r.username }}</div>
+              <div class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                <span>{{ t('proofread') }}: {{ fmtNum(r.submitted) }}</span>
+                <span v-if="central.central.review_enabled" class="text-emerald-600 dark:text-emerald-400">{{ t('accepted') }}: {{ fmtNum(r.accepted) }}</span>
+                <span v-if="central.central.validation_enabled" class="text-violet-600 dark:text-violet-400">{{ t('validated') }}: {{ fmtNum(r.validated || 0) }}</span>
+              </div>
+              <div v-if="Object.keys(r.projects).length > 1" class="mt-0.5 text-[10px] text-slate-400 truncate"><span v-for="(pts, dom) in r.projects" :key="dom" class="mr-2">{{ projectShort(dom) }}: {{ fmtNum(pts) }}</span></div>
+            </div>
+            <div class="shrink-0 text-right">
+              <div class="text-base font-bold tabular-nums leading-tight">{{ fmtNum(r.points) }}</div>
+              <div class="text-[10px] uppercase tracking-wider text-slate-500">{{ t('points') }}</div>
+            </div>
+          </li>
+        </ol>
+        <!-- tablet / desktop -->
+        <div class="hidden sm:block overflow-x-auto"><table class="w-full text-left text-sm">
           <thead><tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-xs text-slate-500 uppercase tracking-wider">
             <th class="py-3 px-4 font-medium w-14">#</th><th class="py-3 px-4 font-medium">{{ t('user') }}</th>
             <th class="py-3 px-4 font-medium">{{ t('perProject') }}</th><th class="py-3 px-4 font-medium text-right">{{ t('proofread') }}</th>
-            <th class="py-3 px-4 font-medium text-right">{{ t('accepted') }}</th><th class="py-3 px-4 font-medium text-right">{{ t('points') }}</th>
+            <th v-if="central.central.review_enabled" class="py-3 px-4 font-medium text-right">{{ t('accepted') }}</th>
+            <th v-if="central.central.validation_enabled" class="py-3 px-4 font-medium text-right">{{ t('validated') }}</th>
+            <th class="py-3 px-4 font-medium text-right">{{ t('points') }}</th>
           </tr></thead>
           <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-            <tr v-if="central.leaderboard.length === 0"><td colspan="6" class="py-8 text-center text-xs text-slate-500">{{ t('noSubmissionsYet') }}</td></tr>
+            <tr v-if="central.leaderboard.length === 0"><td colspan="7" class="py-8 text-center text-xs text-slate-500">{{ t('noSubmissionsYet') }}</td></tr>
             <tr v-for="(r, i) in central.leaderboard.slice(0, leaderboardLimit)" :key="r.username" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
               <td class="py-2.5 px-4 text-xs text-slate-500 tabular-nums">{{ fmtNum(i + 1) }}</td>
-              <td class="py-2.5 px-4 font-semibold">{{ r.username }}</td>
+              <td class="py-2.5 px-4 font-semibold max-w-[14rem] truncate" :title="r.username">{{ r.username }}</td>
               <td class="py-2.5 px-4 text-[11px] text-slate-500"><span v-for="(pts, dom) in r.projects" :key="dom" class="mr-2 whitespace-nowrap">{{ projectShort(dom) }}: {{ fmtNum(pts) }}</span></td>
               <td class="py-2.5 px-4 text-right tabular-nums text-xs">{{ fmtNum(r.submitted) }}</td>
-              <td class="py-2.5 px-4 text-right tabular-nums text-xs text-emerald-600 dark:text-emerald-400">{{ fmtNum(r.accepted) }}</td>
+              <td v-if="central.central.review_enabled" class="py-2.5 px-4 text-right tabular-nums text-xs text-emerald-600 dark:text-emerald-400">{{ fmtNum(r.accepted) }}</td>
+              <td v-if="central.central.validation_enabled" class="py-2.5 px-4 text-right tabular-nums text-xs text-violet-600 dark:text-violet-400">{{ fmtNum(r.validated || 0) }}</td>
               <td class="py-2.5 px-4 text-right tabular-nums font-bold">{{ fmtNum(r.points) }}</td>
             </tr>
           </tbody>
@@ -1176,14 +1237,14 @@
           <div class="text-[10px] text-slate-500">/ {{ fmtNum(upages.summary.participants) }}</div>
         </div>
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+      <div class="ps-stat-grid">
         <div class="ps-stat"><div class="ps-stat-l">{{ t('proofread') }}</div><div class="ps-stat-v">{{ fmtNum(upages.summary.proofread) }}</div></div>
-        <div class="ps-stat"><div class="ps-stat-l">{{ t('accepted') }}</div><div class="ps-stat-v text-emerald-600 dark:text-emerald-400">{{ fmtNum(upages.summary.accepted) }}</div></div>
         <template v-if="upages.review_enabled">
+          <div class="ps-stat"><div class="ps-stat-l">{{ t('accepted') }}</div><div class="ps-stat-v text-emerald-600 dark:text-emerald-400">{{ fmtNum(upages.summary.accepted) }}</div></div>
           <div class="ps-stat"><div class="ps-stat-l">{{ t('pending') }}</div><div class="ps-stat-v text-amber-600">{{ fmtNum(upages.summary.pending) }}</div></div>
           <div class="ps-stat"><div class="ps-stat-l">{{ t('needsFix') }}</div><div class="ps-stat-v text-orange-600">{{ fmtNum(upages.summary.needs_fix) }}</div></div>
         </template>
-        <div v-if="upages.show_validation" class="ps-stat"><div class="ps-stat-l">{{ t('validated') }}</div><div class="ps-stat-v">{{ fmtNum(upages.summary.validated) }}</div></div>
+        <div v-if="upages.show_validation" class="ps-stat"><div class="ps-stat-l">{{ t('validated') }}</div><div class="ps-stat-v text-violet-600 dark:text-violet-400">{{ fmtNum(upages.summary.validated) }}</div></div>
         <div class="ps-stat"><div class="ps-stat-l">{{ t('points') }}</div><div class="ps-stat-v">{{ fmtNum(upages.summary.points) }}</div></div>
       </div>
       <div v-if="Object.keys(upages.by_book).length > 1" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm space-y-2">
@@ -1198,7 +1259,8 @@
         <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ t('submissions') }} ({{ fmtNum(upages.total) }})</span>
           <select v-model="upages.status" @change="loadUserPages(1)" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs">
-            <option value="all">{{ t('all') }}</option><option value="accepted">{{ t('accepted') }}</option>
+            <option value="all">{{ t('all') }}</option><option value="accepted">{{ upages.review_enabled ? t('accepted') : t('proofread') }}</option>
+            <option v-if="upages.show_validation" value="validated">{{ t('validated') }}</option>
             <template v-if="upages.review_enabled"><option value="pending_review">{{ t('pending') }}</option><option value="needs_fix">{{ t('needsFix') }}</option><option value="rejected">{{ t('rejected') }}</option></template>
           </select>
         </div>
@@ -1577,7 +1639,7 @@ const I18N = {
     proofreadOnly: 'Proofread', err_projects_required: 'Add at least one project', err_invalid_project: 'Invalid Wikisource project',
     err_project_has_data: 'This project already has contest pages and cannot be removed', err_not_assigned_to_you: 'This page is assigned to another reviewer',
     err_invalid_value: 'Invalid value', centralSaved: 'Central contest saved', light: 'Light', dark: 'Dark',
-    loginWikimedia: 'MediaWiki Login', logout: 'Logout',
+    loginWikimedia: 'MediaWiki Login', loginShort: 'Login', logout: 'Logout',
     running: 'Active', upcoming: 'Upcoming', ended: 'Ended', pending_approval: 'Pending Approval', rejected_status: 'Rejected', rejected_c: 'Rejected',
     all: 'All', createContest: 'Create Contest', editContestConfig: 'Contest Configuration',
     noContests: 'No contests found in this category.', contestName: 'Contest Name', project: 'Wikisource Project',
@@ -1730,7 +1792,7 @@ const I18N = {
     proofreadOnly: 'মুদ্রণ সংশোধিত', err_projects_required: 'অন্তত একটি প্রকল্প যোগ করুন', err_invalid_project: 'উইকিসংকলন প্রকল্পটি সঠিক নয়',
     err_project_has_data: 'এই প্রকল্পে ইতিমধ্যে পাতা জমা পড়েছে, তাই বাদ দেওয়া যাবে না', err_not_assigned_to_you: 'এই পাতাটি অন্য পর্যালোচককে বরাদ্দ করা',
     err_invalid_value: 'মান সঠিক নয়', centralSaved: 'কেন্দ্রীয় প্রতিযোগিতা সংরক্ষিত হয়েছে', light: 'লাইট', dark: 'ডার্ক',
-    loginWikimedia: 'মিডিয়াউইকি লগইন', logout: 'লগআউট',
+    loginWikimedia: 'মিডিয়াউইকি লগইন', loginShort: 'লগইন', logout: 'লগআউট',
     running: 'চলমান', upcoming: 'আসন্ন', ended: 'সমাপ্ত', pending_approval: 'অনুমোদনের অপেক্ষায়', rejected_status: 'প্রত্যাখ্যাত',
     all: 'সব', createContest: 'নতুন প্রতিযোগিতা কনফিগার করুন', editContestConfig: 'প্রতিযোগিতা কনফিগারেশন',
     noContests: 'এই তালিকায় কোনো প্রতিযোগিতা নেই।', contestName: 'প্রতিযোগিতার নাম', project: 'উইকিসংকলন প্রকল্প',
@@ -2000,7 +2062,8 @@ createApp({
     },
     reviewStatusClass(st) {
       return { accepted: 'border-emerald-500/30 text-emerald-700 dark:text-emerald-300', pending_review: 'border-amber-500/30 text-amber-700 dark:text-amber-300',
-               needs_fix: 'border-orange-500/30 text-orange-700 dark:text-orange-300', rejected: 'border-rose-500/30 text-rose-700 dark:text-rose-300' }[st] || 'border-slate-300';
+               needs_fix: 'border-orange-500/30 text-orange-700 dark:text-orange-300', rejected: 'border-rose-500/30 text-rose-700 dark:text-rose-300',
+               validated: 'border-violet-500/30 text-violet-700 dark:text-violet-300' }[st] || 'border-slate-300';
     },
     isExpanded(h) { return this.expanded[h.slug] !== undefined ? this.expanded[h.slug] : h.status === 'running'; },
     toggleTree(slug) { const h = this.centrals.find(x => x.slug === slug); this.expanded = { ...this.expanded, [slug]: !this.isExpanded(h) }; },
@@ -2129,7 +2192,7 @@ createApp({
       if (lvl === 2) return this.t('lvlProblematic'); return this.t('lvlUnproofread');
     },
     statusLabel(st) {
-      return { accepted: this.t('accepted'), pending_review: this.t('pending'), needs_fix: this.t('needsFix'), rejected: this.t('rejected') }[st] || this.t('lvlUnproofread');
+      return { accepted: this.t('accepted'), pending_review: this.t('pending'), needs_fix: this.t('needsFix'), rejected: this.t('rejected'), validated: this.t('validated') }[st] || this.t('lvlUnproofread');
     },
     toggleLang() { this.lang = this.lang === 'en' ? 'bn' : 'en'; safeStore('ws_lang', this.lang); document.documentElement.lang = this.lang; },
     toggleTheme() { this.darkMode = !this.darkMode; safeStore('ws_theme', this.darkMode ? 'dark' : 'light'); this.applyTheme(); },
@@ -2236,9 +2299,12 @@ createApp({
       const c = this.central, bold = '\x27\x27\x27';
       const doms = c.projects.map(p => p.wiki_domain);
       let wt = `== ${c.central.title} — ${this.t('globalLeaderboard')} ==\n`;
-      wt += `{| class="wikitable sortable"\n! # !! ${this.t('user')} !! ` + doms.map(d => this.projectShort(d)).join(' !! ') + ` !! ${this.t('proofread')} !! ${this.t('accepted')} !! ${this.t('points')}\n`;
+      const rev = c.central.review_enabled, val = c.central.validation_enabled;
+      wt += `{| class="wikitable sortable"\n! # !! ${this.t('user')} !! ` + doms.map(d => this.projectShort(d)).join(' !! ') + ` !! ${this.t('proofread')}`
+        + (rev ? ` !! ${this.t('accepted')}` : '') + (val ? ` !! ${this.t('validated')}` : '') + ` !! ${this.t('points')}\n`;
       c.leaderboard.forEach((r, i) => {
-        wt += `|-\n| ${i + 1} || [[m:User:${r.username}|${r.username}]] || ` + doms.map(d => r.projects[d] || 0).join(' || ') + ` || ${r.submitted} || ${r.accepted} || ${bold}${r.points}${bold}\n`;
+        wt += `|-\n| ${i + 1} || [[m:User:${r.username}|${r.username}]] || ` + doms.map(d => r.projects[d] || 0).join(' || ') + ` || ${r.submitted}`
+          + (rev ? ` || ${r.accepted}` : '') + (val ? ` || ${r.validated || 0}` : '') + ` || ${bold}${r.points}${bold}\n`;
       });
       wt += '|}\n\n';
       wt += `== ${this.t('includedProjects')} ==\n{| class="wikitable sortable"\n! ${this.t('project')} !! ${this.t('participants')} !! ${this.t('proofread')} !! ${this.t('accepted')} !! ${this.t('points')}\n`;
@@ -2611,9 +2677,13 @@ createApp({
     generateResultsWikiTables() {
       const bold = '\x27\x27\x27';
       let wt = `== ${this.active.contest.title} — ${this.t('leaderboard')} ==\n`;
-      wt += `{| class="wikitable sortable"\n! # !! ${this.t('user')} !! ${this.t('proofread')} !! ${this.t('accepted')} !! ${this.t('bonus')} !! ${this.t('points')}\n`;
+      // same columns as the on-screen leaderboard
+      const rev = this.active.contest.review_enabled, val = this.active.contest.validation_enabled;
+      wt += `{| class="wikitable sortable"\n! # !! ${this.t('user')} !! ${this.t('proofread')}`
+        + (rev ? ` !! ${this.t('accepted')}` : '') + (val ? ` !! ${this.t('validated')}` : '') + (rev ? ` !! ${this.t('bonus')}` : '') + ` !! ${this.t('points')}\n`;
       this.active.leaderboard.forEach((r, i) => {
-        wt += `|-\n| ${i + 1} || [[User:${r.username}|${r.username}]] || ${r.submitted} || ${r.accepted} || ${r.bonus} || ${bold}${r.points}${bold}\n`;
+        wt += `|-\n| ${i + 1} || [[User:${r.username}|${r.username}]] || ${r.submitted}`
+          + (rev ? ` || ${r.accepted}` : '') + (val ? ` || ${r.validated}` : '') + (rev ? ` || ${r.bonus}` : '') + ` || ${bold}${r.points}${bold}\n`;
       });
       wt += '|}\n';
       if (this.active.contest.review_enabled && this.active.jury_stats.length) {

@@ -97,7 +97,9 @@ A page does **not** count when:
 - ❌ The page is later reverted to *Not proofread*.
 - ❌ It is an excluded page (e.g. table of contents), or by an excluded user or a bot.
 
-**Points:** in contests *with review*, points are added when a page is **accepted**. In contests *without review*, every eligible page counts directly. Validation earns points only if the contest gives validation points.
+**Points:** in contests *with review*, points are added when a page is **accepted**. In contests *without review*, every eligible page counts directly. Validation earns points only if the contest gives validation points. Validation points are automatic: validated pages are never listed for review, and validating a page that was proofread *before* the contest still counts (the first Proofread → Validated change must happen inside the contest, by someone other than the proofreader). Example: 3 points per proofread and 1 per validation, 5 proofread + 3 validated = 18 points.
+
+**Leaderboard columns:** *with review* — Proofread, Accepted, Pending, Needs fix, Rejected, Points; *without review* — Proofread, Points (no Accepted column, every eligible page is auto-accepted). A **Validated** column is added whenever validation earns points. The CSV and wikitable exports use the same columns.
 
 ---
 
